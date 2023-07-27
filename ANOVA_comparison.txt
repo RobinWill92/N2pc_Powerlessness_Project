@@ -1,0 +1,20 @@
+Effect N2pc_P7/8_110-210                                            
+1                 (Intercept) F(1, 86) = 65.98, p < .001, petasq = .43 ***
+2                   Condition F(1, 86) =  0.44, p = .507, petasq < .01    
+3                       Block F(1, 86) =  2.46, p = .120, petasq = .03    
+4                 distractors F(1, 86) =  0.79, p = .375, petasq < .01    
+5             Condition:Block F(1, 86) =  0.02, p = .893, petasq < .01    
+6       Condition:distractors F(1, 86) =  1.36, p = .246, petasq = .02    
+7           Block:distractors F(1, 86) =  1.03, p = .312, petasq = .01    
+8 Condition:Block:distractors F(1, 86) =  2.01, p = .160, petasq = .02
+
+Effect N2pc_P7/8_180-300
+Effect                                             
+1                 (Intercept) F(1, 86) = 37.78, p < .001, petasq = .31 ***
+2                   Condition F(1, 86) =  0.03, p = .864, petasq < .01    
+3                       Block F(1, 86) =  2.70, p = .104, petasq = .03    
+4                 distractors F(1, 86) = 29.11, p < .001, petasq = .25 ***
+5             Condition:Block F(1, 86) =  0.17, p = .678, petasq < .01    
+6       Condition:distractors F(1, 86) =  0.02, p = .898, petasq < .01    
+7           Block:distractors F(1, 86) =  0.15, p = .696, petasq < .01    
+8 Condition:Block:distractors F(1, 86) =  0.65, p = .422, petasq < .01  
