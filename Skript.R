@@ -71,8 +71,8 @@ data_stages %>% filter(block==1) %>% #both blocks are linked => only use block1 
   summarise(total_subjects = n(),
             valid_subjects = sum(include),
             valid_subjets_p = valid_subjects / n())
-#data_stages %>% mutate(valid = rowMeans(tibble(valid_NA, valid_AN))) %>% 
-#data_stages %>% mutate(valid = valid_NA + valid_AN, valid_p = valid / 160, stage = stage %>% as_factor()) %>% #na.omit() %>% 
+#data_stages %>% mutate(valid = rowMeans(tibble(valid_NA, valid_AN)))
+#data_stages %>% mutate(valid = valid_NA + valid_AN, valid_p = valid / 160, stage = stage %>% as_factor())
 data_stages %>% pivot_longer(valid_NA:valid_AN, names_to="distractors", values_to="valid") %>% 
   #filter(valid > 0) %>% 
   ggplot(aes(x=valid, fill=stage, color=include)) + 
