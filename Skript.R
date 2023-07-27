@@ -116,12 +116,12 @@ dataEeg = data_Block1 %>% bind_rows(data_Block2) %>%
 names(dataEeg) = names(dataEeg) %>% gsub("-Indiv_Ch_P78", "", .); rm(data_Block1, data_Block2)
 
 behavioral = read_csv("Dot_Probe_Task_Table_complete_24_08_22.csv") %>% 
-  mutate(across(.fns=function(x) { ifelse(x %>% is.nan() | x == "NaN", NA, x) }))
+  mutate(across(.cols=everything(), .fns=function(x) { ifelse(x %>% is.nan() | x == "NaN", NA, x) }))
 
 # for subsequent reverse-coding
 rec_x <- setNames(c(7:1), 1:7)
 
-prestudy = read_csv("PreStudy.csv")  %>% 
+prestudy = read_csv("PreStudy.csv") %>% 
   slice(-1) %>%
   slice(-1) %>%
   mutate_at(c('Q2_1', 'Q2_2', 'Q2_3', 'Q2_4', 'Q2_5', 'Q2_6', 'Q2_7', 'Q2_8'), as.numeric) %>%
@@ -132,21 +132,21 @@ prestudy = read_csv("PreStudy.csv")  %>%
   rowwise() %>% mutate(TraitPow = mean(c(Q2_1, Q2_2, Q2_3, Q2_4, Q2_5, Q2_6, Q2_7, Q2_8))) %>% 
   filter(!is.na(Q9))
 
-  prestudy %>%
+prestudy %>%
   select(Q2_1, Q2_2, Q2_3, Q2_4, Q2_5, Q2_6, Q2_7, Q2_8) %>% 
   as.matrix() %>%
   rcorr(type = "pearson")
- 
-  # Cronbach's alpha
-  alpha(subset(prestudy, select = c(Q2_1, Q2_2, Q2_3, Q2_4, Q2_5, Q2_6, Q2_7, Q2_8)), check.keys =TRUE)
 
-  table(prestudy$TraitPow)
+# Cronbach's alpha
+alpha(subset(prestudy, select = c(Q2_1, Q2_2, Q2_3, Q2_4, Q2_5, Q2_6, Q2_7, Q2_8)), check.keys =TRUE)
+
+table(prestudy$TraitPow)
 
 # check whether columns are numeric 
 # sapply(prestudy, class) 
 
 
-  prestudy_codes = read_csv("PreStudy_Codes.csv", col_names=F) %>% 
+prestudy_codes = read_csv("PreStudy_Codes.csv", col_names=F) %>% 
   filter(X1 != "Partcipant_No;Code_PreSurvey") %>% 
   separate(X1, into=c("subject", "code"), sep=";") %>% 
   mutate_at(c('subject'), as.numeric) %>% 
@@ -156,15 +156,15 @@ prestudy = read_csv("PreStudy.csv")  %>%
                                subject == 70 ~ 70,
                                subject == 71 ~ 71,
                                subject == 73 ~ 73))
-  
-  
-  PreStud_FINAL <- stringdist_left_join(prestudy, prestudy_codes, by = join_by("Q9" == "code"))
-  
-  PreStud_FINAL = PreStud_FINAL %>% 
-    filter((TraitPow == 5.5 & subject_2 == 134) == F) %>%  #excluding second prestudy entry of part 134
-    filter((is.na(TraitPow) & subject_2 == 158) == F) #excluding second empty prestudy entry of part 158
 
-  
+
+PreStud_FINAL <- stringdist_left_join(prestudy, prestudy_codes, by = join_by("Q9" == "code"))
+
+PreStud_FINAL = PreStud_FINAL %>% 
+  filter((TraitPow == 5.5 & subject_2 == 134) == F) %>%  #excluding second prestudy entry of part 134
+  filter((is.na(TraitPow) & subject_2 == 158) == F) #excluding second empty prestudy entry of part 158
+
+
 #checks
 #behavioral %>% filter({Vp_Manip != Vp_Block1 | Vp_Manip != Vp_Block2} %>% replace_na(T)) #no inconsistencies in subject number
 #behavioral %>% filter({Condition != Cond_Post_Quest | Condition != Cond_Block1 | Condition != Cond_Block2} %>% replace_na(T)) #inconsistencies in conditions!
