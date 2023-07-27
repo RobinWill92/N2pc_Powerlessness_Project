@@ -10,7 +10,7 @@ library(lmerTest)
 
 exclude = c(107, #too many triggers in block 1, no triggers in block 2
             151 #no EEG data for block 1
-            )
+)
 
 se = function(x, na.rm = TRUE) { sd(x, na.rm) / sqrt(if(!na.rm) length(x) else sum(!is.na(x))) }
 
@@ -196,13 +196,13 @@ behav_analys = behavioral_2 %>%
   pivot_longer(-c("Vp", "Condition", "TraitPow"), values_to="Latencies") %>% 
   separate(name, into=c("RT", "TrialType", "Block")) %>% select(-RT) %>% 
   na.omit()
-  
+
 RT.analysis = behav_analys
 RT.analysis %>% mutate(TraitPow = scale(TraitPow)[,1]) %>% afex::aov_ez(id="Vp", dv="Latencies",
-                             covariate = c("TraitPow"),
-                             factorize = FALSE,
-                               within=c("Block", "TrialType"),
-                               between=c("Condition")) # %>% apa::anova_apa(force_sph_corr=T)
+                                                                        covariate = c("TraitPow"),
+                                                                        factorize = FALSE,
+                                                                        within=c("Block", "TrialType"),
+                                                                        between=c("Condition")) # %>% apa::anova_apa(force_sph_corr=T)
 
 RT.analysis %>% filter(Vp %in% c(134, 155, 158, 224, 239, 293, 310)) # for debugging
 # 134 --> Vier mal 'Block 1' mit 2 unterschiedlichen trait power Werten; Block 2 behav raw data file is missing
@@ -229,7 +229,7 @@ RT.analysis %>% group_by(Block, TrialType, Condition) %>%
 
 
 # RT.analysis_mlm <-lmer(Latencies ~ Condition * TrialType *  TraitPow * Block + (1|Vp), # (1|Vp) creates random intercept; (1 + Block | Vp) creates random random intercept + random slope
-     # data = behav_analys)
+# data = behav_analys)
 
 
 # summary(RT.analysis_mlm)
@@ -282,18 +282,18 @@ n2pc_TraitPow <- left_join(n2pc, PreStud_FINAL_lim, by = join_by("Vp" == "subjec
 #ANOVA
 n2pc.analysis = n2pc_TraitPow %>% filter(subset == "all", distractors != "all", Vp %in% include)
 n2pc.analysis %>% mutate(TraitPow = scale(TraitPow)[,1]) %>% afex::aov_ez(id="Vp", dv="n2pc",
-                               covariate = c("TraitPow"),
-                               factorize = FALSE,
-                               within=c("Block", "distractors"),
-                               between="Condition") # %>% apa::anova_apa(force_sph_corr=T)
+                                                                          covariate = c("TraitPow"),
+                                                                          factorize = FALSE,
+                                                                          within=c("Block", "distractors"),
+                                                                          between="Condition") # %>% apa::anova_apa(force_sph_corr=T)
 
 #ANOVA
 n2pc.analysis %>% filter(Vp %in% c(73, 121, 142, 145, 199) == F) %>% # Analysis that shows intercept
   mutate(TraitPow = scale(TraitPow)[,1]) %>% ez::ezANOVA(wid=.(Vp), dv=.(n2pc),
-                                                                          within=.(Block, distractors),
-                                                                          between=.(TraitPow, Condition),
-                                                                         observed = .(TraitPow),
-                                                                         detailed = T, type = 2)  %>% apa::anova_apa(force_sph_corr=T)
+                                                         within=.(Block, distractors),
+                                                         between=.(TraitPow, Condition),
+                                                         observed = .(TraitPow),
+                                                         detailed = T, type = 2)  %>% apa::anova_apa(force_sph_corr=T)
 
 #plots
 n2pc.analysis %>% group_by(Block, Condition, Vp) %>% summarise(n2pc = mean(n2pc)) %>% #one value per participant => correct calculation of standard error
@@ -390,8 +390,8 @@ electrodes = dataEeg %>% select(Vp, Block, contains("P7_"), contains("P8_")) %>%
 #ANOVA
 electrodes.analysis = electrodes %>% filter(subset == "all", distractors != "all", Vp %in% include)
 electrodes.analysis %>% afex::aov_ez(id="Vp", dv="voltage",
-                               within=c("Block", "hemisphere", "distractors"),
-                               between="Condition") %>% apa::anova_apa(force_sph_corr=T)
+                                     within=c("Block", "hemisphere", "distractors"),
+                                     between="Condition") %>% apa::anova_apa(force_sph_corr=T)
 
 #plots
 # hemisphere main effect
