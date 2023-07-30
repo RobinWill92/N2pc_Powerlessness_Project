@@ -412,18 +412,33 @@ contraipsi.analysis %>% afex::aov_ez(id="Vp", dv="voltage",
 
 #plots
 # emotion (N2pc)
-contraipsi.analysis %>% group_by(emotion, Vp) %>% summarise(voltage = mean(voltage)) %>% #one value per participant => correct calculation of standard error
-  summarise(voltage.se = se(voltage), voltage = mean(voltage)) %>% 
-  ggplot(aes(x = emotion, y = voltage)) +
-  geom_errorbar(aes(ymin=voltage-voltage.se, ymax=voltage+voltage.se)) +
-  geom_point() + myGgTheme
+contraipsi.analysis %>% group_by(emotion, Vp) %>% summarise(voltage = mean(voltage)) %>% 
+  #summarise(voltage.m = mean(voltage), voltage.se = se(voltage)) %>% 
+  pivot_wider(id_cols=Vp, names_from=emotion, values_from=voltage) %>% 
+  mutate(n2pc = Contra - Ipsi) %>% summarise(n2pc.m = mean(n2pc), n2pc.se = se(n2pc))
+  
+# contraipsi.analysis %>% group_by(emotion, Vp) %>% summarise(voltage = mean(voltage)) %>% #one value per participant => correct calculation of standard error
+#   summarise(voltage.se = se(voltage), voltage = mean(voltage)) %>% 
+#   ggplot(aes(x = emotion, y = voltage)) +
+#   geom_errorbar(aes(ymin=voltage-voltage.se, ymax=voltage+voltage.se)) +
+#   geom_point() + myGgTheme
+
+#TODO N2pc grand average
+
 
 # emotion x distractors (hemisphere main effect phrased complicatedly :D, see below)
-contraipsi.analysis %>% group_by(emotion, distractors, Vp) %>% summarise(voltage = mean(voltage)) %>% #one value per participant => correct calculation of standard error
-  summarise(voltage.se = se(voltage), voltage = mean(voltage)) %>% 
-  ggplot(aes(x = emotion, y = voltage, color=distractors, group=distractors)) +
-  geom_errorbar(aes(ymin=voltage-voltage.se, ymax=voltage+voltage.se)) +
-  geom_line() + geom_point() + myGgTheme
+contraipsi.analysis %>% group_by(emotion, distractors, Vp) %>% summarise(voltage = mean(voltage)) %>% 
+  #summarise(voltage.m = mean(voltage), voltage.se = se(voltage)) %>% 
+  pivot_wider(names_from=emotion, values_from=voltage) %>% 
+  mutate(n2pc = Contra - Ipsi) %>% group_by(distractors) %>% summarise(n2pc.m = mean(n2pc), n2pc.se = se(n2pc))
+
+# contraipsi.analysis %>% group_by(emotion, distractors, Vp) %>% summarise(voltage = mean(voltage)) %>% #one value per participant => correct calculation of standard error
+#   summarise(voltage.se = se(voltage), voltage = mean(voltage)) %>% 
+#   ggplot(aes(x = emotion, y = voltage, color=distractors, group=distractors)) +
+#   geom_errorbar(aes(ymin=voltage-voltage.se, ymax=voltage+voltage.se)) +
+#   geom_line() + geom_point() + myGgTheme
+
+#TODO N2pc grand average with N2pc_AN & N2pc_NA
 
 
 
@@ -444,18 +459,20 @@ electrodes.analysis %>% afex::aov_ez(id="Vp", dv="voltage",
 #plots
 # hemisphere main effect
 electrodes.analysis %>% group_by(hemisphere, Vp) %>% summarise(voltage = mean(voltage)) %>% #one value per participant => correct calculation of standard error
-  summarise(voltage.se = se(voltage), voltage = mean(voltage)) %>% 
-  ggplot(aes(x = hemisphere, y = voltage)) +
-  geom_errorbar(aes(ymin=voltage-voltage.se, ymax=voltage+voltage.se)) +
-  geom_point() + myGgTheme
+  summarise(voltage.se = se(voltage), voltage = mean(voltage))
+# electrodes.analysis %>% group_by(hemisphere, Vp) %>% summarise(voltage = mean(voltage)) %>% #one value per participant => correct calculation of standard error
+#   summarise(voltage.se = se(voltage), voltage = mean(voltage)) %>% 
+#   ggplot(aes(x = hemisphere, y = voltage)) +
+#   geom_errorbar(aes(ymin=voltage-voltage.se, ymax=voltage+voltage.se)) +
+#   geom_point() + myGgTheme
 
 # hemisphere x distractors (N2pc effect phrased complicatedly :D)
-electrodes.analysis %>% group_by(hemisphere, distractors, Vp) %>% summarise(voltage = mean(voltage)) %>% #one value per participant => correct calculation of standard error
-  summarise(voltage.se = se(voltage), voltage = mean(voltage)) %>% 
-  mutate(emotion = ifelse(hemisphere=="P7" & distractors=="NA" | (hemisphere=="P8" & distractors=="AN"), "angry", "neutral")) %>% 
-  ggplot(aes(x = hemisphere, y = voltage, color=emotion, shape=distractors, group=distractors)) +
-  geom_errorbar(aes(ymin=voltage-voltage.se, ymax=voltage+voltage.se)) +
-  geom_line(color="black") + geom_point() + myGgTheme
+# electrodes.analysis %>% group_by(hemisphere, distractors, Vp) %>% summarise(voltage = mean(voltage)) %>% #one value per participant => correct calculation of standard error
+#   summarise(voltage.se = se(voltage), voltage = mean(voltage)) %>% 
+#   mutate(emotion = ifelse(hemisphere=="P7" & distractors=="NA" | (hemisphere=="P8" & distractors=="AN"), "angry", "neutral")) %>% 
+#   ggplot(aes(x = hemisphere, y = voltage, color=emotion, shape=distractors, group=distractors)) +
+#   geom_errorbar(aes(ymin=voltage-voltage.se, ymax=voltage+voltage.se)) +
+#   geom_line(color="black") + geom_point() + myGgTheme
 
 
 
