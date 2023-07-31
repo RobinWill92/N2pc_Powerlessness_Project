@@ -284,7 +284,7 @@ with(n2pc_TraitPow, cor.test(TraitPow, Diff_P78_all, method=c("pearson"))) %>% a
 #exploration
 n2pc_TraitPow %>%
   select(-Vp, -Block) %>% 
-  corrr::correlate(method = "pearson", quiet=T) %>% 
+  corrr::correlate(method = "pearson", quiet=T) %>% #beautiful output but no p-values :/
   #shave() %>% rplot(print_cor = TRUE) #plot output (not so good)
   #network_plot() #interesting network plot
   shave() %>% slice(-1) %>% select(-last_col()) %>% fashion() #console output
