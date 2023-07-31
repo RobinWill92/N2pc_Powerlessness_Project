@@ -284,7 +284,7 @@ with(n2pc_TraitPow, cor.test(TraitPow, Diff_P78_all, method=c("pearson"))) %>% a
 #exploration
 n2pc_TraitPow %>%
   select(-Vp, -Block) %>% 
-  correlate(method = "pearson", quiet=T) %>% 
+  corrr::correlate(method = "pearson", quiet=T) %>% 
   #shave() %>% rplot(print_cor = TRUE) #plot output (not so good)
   #network_plot() #interesting network plot
   shave() %>% slice(-1) %>% select(-last_col()) %>% fashion() #console output
@@ -292,8 +292,12 @@ n2pc_TraitPow %>%
 #p values
 n2pc_TraitPow %>%
   select(-Vp, -Block) %>% 
-  as.matrix() %>%
-  rcorr(type = "pearson") %>% .[["P"]] %>% data.frame() %>% slice(-1) %>% select(-last_col())
+  as.matrix() %>% 
+  #corrplot::cor.mtest() %>%  #p and CI
+  Hmisc::rcorr(type = "pearson") %>% #r, n, and P
+  lapply(function(x) {x %>% data.frame() %>% slice(-1) %>% select(-last_col())}) %>% 
+  #.[c("r", "P")]
+  .[["P"]]
 
 
 # Interaction trait power + state power condition on n2pc
