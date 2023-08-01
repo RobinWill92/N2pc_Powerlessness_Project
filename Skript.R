@@ -245,6 +245,11 @@ RT.analysis %>% group_by(Block, Condition, Vp) %>% summarise(Latencies = mean(La
 #trial type / congruency effect
 RT.analysis %>% group_by(TrialType, Vp) %>% summarise(Latencies = mean(Latencies)) %>% 
   summarise(Latencies.m = mean(Latencies), Latencies.se = se(Latencies))
+#TODO t-Test to obtain Cohen's d?
+
+#block effect
+RT.analysis %>% group_by(Block, Vp) %>% summarise(Latencies = mean(Latencies)) %>% 
+  summarise(Latencies.m = mean(Latencies), Latencies.se = se(Latencies))
 
 
 #block x condition x trial type
@@ -417,7 +422,7 @@ contraipsi.analysis %>% afex::aov_ez(id="Vp", dv="voltage",
 #plots
 # emotion (N2pc)
 contraipsi.analysis %>% group_by(emotion, Vp) %>% summarise(voltage = mean(voltage)) %>% 
-  #summarise(voltage.m = mean(voltage), voltage.se = se(voltage)) %>% 
+  #summarise(voltage.m = mean(voltage), voltage.se = se(voltage))
   pivot_wider(id_cols=Vp, names_from=emotion, values_from=voltage) %>% 
   mutate(n2pc = Contra - Ipsi) %>% summarise(n2pc.m = mean(n2pc), n2pc.se = se(n2pc))
   
