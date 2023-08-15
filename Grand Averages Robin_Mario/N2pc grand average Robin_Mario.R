@@ -93,15 +93,18 @@ n2pc_2_diss %>% ggplot(aes(x=Time, y=Voltage, color=ERP, group=ERP)) +
 
 
 # Both blocks -------------------------------------------------------------
-n2pc = n2pc_1_diss %>% mutate(Block=1) %>% bind_rows(n2pc_2_diss %>% mutate(Block=2)) %>% mutate(Block = Block %>% as_factor())
+n2pc.both = n2pc_1_diss %>% mutate(Block=1) %>% bind_rows(n2pc_2_diss %>% mutate(Block=2))
+n2pc = n2pc.both %>% summarise(Voltage = mean(Voltage), .by = c("Time", "ERP")) %>% mutate(Block="Average") %>% 
+  bind_rows(n2pc) %>% mutate(Block = Block %>% as_factor())
 n2pc %>% ggplot(aes(x=Time, y=Voltage, color=Block, group=Block)) + 
   geom_rect(xmin=180, xmax=300, ymin=-Inf, ymax=Inf, fill="grey75", colour="white", show.legend=F) + #colour sets colour of border! Use NA to remove it
   #geom_rect(xmin=300, xmax=400, ymin=-Inf, ymax=Inf, fill="grey85", colour="white", show.legend=F) +
   geom_hline(aes(yintercept=0)) + geom_vline(aes(xintercept=0), linetype=2) +
   #geom_line(size=2.5, colour="white") + #draw a border around the lines (looks horrible)
   geom_line(size=2) + 
+  geom_line(data=n2pc %>% filter(Block=="Average"), size=2) + #plot average again on top
   theme_bw() +
-  scale_color_manual(values=c("red", "blue", "black")) +
+  scale_color_manual(values=c("black", "red", "blue")) +
   scale_x_continuous(expand = c(0.02, 0)) +
   scale_y_reverse(expand = c(0.01, 0)) +
   xlab("Trial Time (ms)") + ylab("N2pc (µV)") + myGgTheme +
@@ -113,5 +116,5 @@ n2pc %>% ggplot(aes(x=Time, y=Voltage, color=Block, group=Block)) +
         legend.background = element_rect(color="black"),
         legend.position = c(0, 1),
         legend.justification = c(0, 1),
-        legend.box.margin=margin(rep(15, times=4)))
+        legend.box.margin=margin(rep(7, times=4)))
 ggsave("plots/N2pc Grand Average.png", dpi=300, type="cairo", width=16, height=7, units="cm", scale=1)
