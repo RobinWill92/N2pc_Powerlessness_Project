@@ -161,6 +161,7 @@ prestudy %>%
 alpha(subset(prestudy, select = c(Q2_1, Q2_2, Q2_3, Q2_4, Q2_5, Q2_6, Q2_7, Q2_8)), check.keys =TRUE)
 
 table(prestudy$TraitPow)
+hist(prestudy$TraitPow)
 
 # check whether columns are numeric 
 # sapply(prestudy, class) 
