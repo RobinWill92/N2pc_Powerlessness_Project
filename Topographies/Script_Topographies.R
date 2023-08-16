@@ -1,5 +1,5 @@
-remotes::install_github("craddm/eegUtils")
 library(remotes)
+remotes::install_github("craddm/eegUtils")
 library(eegUtils)
 library(tidyverse)
 library(haven)
