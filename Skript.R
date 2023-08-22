@@ -246,11 +246,14 @@ RT.analysis %>% group_by(Block, Condition, Vp) %>% summarise(Latencies = mean(La
 #trial type / congruency effect
 RT.analysis %>% group_by(TrialType, Vp) %>% summarise(Latencies = mean(Latencies)) %>% 
   summarise(Latencies.m = mean(Latencies), Latencies.se = se(Latencies))
-#TODO t-Test to obtain Cohen's d?
+RT.analysis %>% group_by(TrialType, Vp) %>% summarise(Latencies = mean(Latencies)) %>% pivot_wider(id_cols=Vp, names_from=TrialType, values_from=Latencies) %>% 
+  with(t.test(congruent, incongruent, paired=T)) %>% apa::t_apa(es_ci=T)
 
 #block effect
 RT.analysis %>% group_by(Block, Vp) %>% summarise(Latencies = mean(Latencies)) %>% 
   summarise(Latencies.m = mean(Latencies), Latencies.se = se(Latencies))
+RT.analysis %>% group_by(Block, Vp) %>% summarise(Latencies = mean(Latencies)) %>% pivot_wider(id_cols=Vp, names_from=Block, values_from=Latencies) %>% 
+  with(t.test(Baseline, Manipulation, paired=T)) %>% apa::t_apa(es_ci=T)
 
 
 #block x condition x trial type
@@ -276,13 +279,13 @@ RT.analysis %>% group_by(Block, Vp) %>% summarise(Latencies = mean(Latencies)) %
 # Trait Power
 
 # Main effect trait power on n2pc
-n2pc = dataEeg %>% select(Vp, Block, contains("Diff_P78")) %>% 
+n2pc_1 = dataEeg %>% select(Vp, Block, contains("Diff_P78")) %>% 
   mutate(Diff_P78_all = (Diff_P78_NA + Diff_P78_AN)/2,
          Diff_P78_all_Odd = (Diff_P78_NA_Odd + Diff_P78_AN_Odd)/2,
          Diff_P78_all_Even = (Diff_P78_NA_Even + Diff_P78_AN_Even)/2) %>%
   filter(Block == 1 ) # decide whether for block 1 or 2
 
-n2pc_TraitPow <- left_join(n2pc, PreStud_FINAL, by = join_by("Vp" == "subject_2"))
+n2pc_TraitPow <- left_join(n2pc_1, PreStud_FINAL, by = join_by("Vp" == "subject_2"))
 
 #hypothesis
 with(n2pc_TraitPow, cor.test(TraitPow, Diff_P78_all, method=c("pearson"))) %>% apa::cor_apa(r_ci=T)
@@ -335,12 +338,12 @@ n2pc.analysis %>% mutate(TraitPow = scale(TraitPow)[,1]) %>% afex::aov_ez(id="Vp
 
 #ANOVA
 #TODO doesn't work at Mario's PC
-n2pc.analysis %>% filter(Vp %in% c(73, 121, 142, 145, 199) == F) %>% # Analysis that shows intercept
-  mutate(TraitPow = scale(TraitPow)[,1]) %>% ez::ezANOVA(wid=.(Vp), dv=.(n2pc),
-                                                         within=.(Block, distractors),
-                                                         between=.(TraitPow, Condition),
-                                                         observed = .(TraitPow),
-                                                         detailed = T, type = 2)  %>% apa::anova_apa(force_sph_corr=T)
+# n2pc.analysis %>% filter(Vp %in% c(73, 121, 142, 145, 199) == F) %>% # Analysis that shows intercept
+#   mutate(TraitPow = scale(TraitPow)[,1]) %>% ez::ezANOVA(wid=.(Vp), dv=.(n2pc),
+#                                                          within=.(Block, distractors),
+#                                                          between=.(TraitPow, Condition),
+#                                                          observed = .(TraitPow),
+#                                                          detailed = T, type = 2) %>% apa::anova_apa(force_sph_corr=T)
 
 #plots
 #Block x Condition
@@ -355,7 +358,9 @@ n2pc.analysis %>% group_by(Block, Condition, Vp) %>% summarise(n2pc = mean(n2pc)
 #Distractors
 n2pc.analysis %>% group_by(distractors, Vp) %>% summarise(n2pc = mean(n2pc)) %>% 
   summarise(n2pc.m = mean(n2pc), n2pc.se = se(n2pc))
-
+n2pc.analysis %>% group_by(distractors, Vp) %>% summarise(n2pc = mean(n2pc)) %>% pivot_wider(names_from=distractors, values_from=n2pc, id_cols=Vp) %>% 
+  with(t.test(AN, `NA`, paired=T)) %>% apa::t_apa(es_ci=T)
+  
 #Block x Condition x Distractors
 # n2pc.analysis %>% group_by(Block, distractors, Condition) %>% 
 #   summarise(n2pc.se = se(n2pc), n2pc = mean(n2pc)) %>% 
@@ -422,10 +427,12 @@ contraipsi.analysis %>% afex::aov_ez(id="Vp", dv="voltage",
 
 #plots
 # emotion (N2pc)
-contraipsi.analysis %>% group_by(emotion, Vp) %>% summarise(voltage = mean(voltage)) %>% 
+contraipsi.n2pc = contraipsi.analysis %>% group_by(emotion, Vp) %>% summarise(voltage = mean(voltage)) %>% 
   #summarise(voltage.m = mean(voltage), voltage.se = se(voltage))
-  pivot_wider(id_cols=Vp, names_from=emotion, values_from=voltage) %>% 
-  mutate(n2pc = Contra - Ipsi) %>% summarise(n2pc.m = mean(n2pc), n2pc.se = se(n2pc))
+  pivot_wider(id_cols=Vp, names_from=emotion, values_from=voltage) %>% mutate(n2pc = Contra - Ipsi)
+contraipsi.n2pc %>% summarise(n2pc.m = mean(n2pc), n2pc.se = se(n2pc))
+contraipsi.n2pc %>% pull(n2pc) %>% t.test() %>% apa::t_apa(es_ci=T)
+
   
 # contraipsi.analysis %>% group_by(emotion, Vp) %>% summarise(voltage = mean(voltage)) %>% #one value per participant => correct calculation of standard error
 #   summarise(voltage.se = se(voltage), voltage = mean(voltage)) %>% 
@@ -433,14 +440,16 @@ contraipsi.analysis %>% group_by(emotion, Vp) %>% summarise(voltage = mean(volta
 #   geom_errorbar(aes(ymin=voltage-voltage.se, ymax=voltage+voltage.se)) +
 #   geom_point() + myGgTheme
 
-#TODO N2pc grand average
+#plot: N2pc grand average, see separate script
 
 
 # emotion x distractors (hemisphere main effect phrased complicatedly :D, see below)
-contraipsi.analysis %>% group_by(emotion, distractors, Vp) %>% summarise(voltage = mean(voltage)) %>% 
+contraipsi.AnNa = contraipsi.analysis %>% group_by(emotion, distractors, Vp) %>% summarise(voltage = mean(voltage)) %>% 
   #summarise(voltage.m = mean(voltage), voltage.se = se(voltage)) %>% 
   pivot_wider(names_from=emotion, values_from=voltage) %>% 
-  mutate(n2pc = Contra - Ipsi) %>% group_by(distractors) %>% summarise(n2pc.m = mean(n2pc), n2pc.se = se(n2pc))
+  mutate(n2pc = Contra - Ipsi)
+contraipsi.AnNa %>% group_by(distractors) %>% summarise(n2pc.m = mean(n2pc), n2pc.se = se(n2pc))
+contraipsi.AnNa %>% pivot_wider(names_from=distractors, values_from=n2pc, id_cols=Vp) %>% with(t.test(AN, `NA`, paired=T)) %>% apa::t_apa(es_ci=T)
 
 # contraipsi.analysis %>% group_by(emotion, distractors, Vp) %>% summarise(voltage = mean(voltage)) %>% #one value per participant => correct calculation of standard error
 #   summarise(voltage.se = se(voltage), voltage = mean(voltage)) %>% 
@@ -470,6 +479,8 @@ electrodes.analysis %>% afex::aov_ez(id="Vp", dv="voltage",
 # hemisphere main effect
 electrodes.analysis %>% group_by(hemisphere, Vp) %>% summarise(voltage = mean(voltage)) %>% #one value per participant => correct calculation of standard error
   summarise(voltage.se = se(voltage), voltage = mean(voltage))
+electrodes.analysis %>% group_by(hemisphere, Vp) %>% summarise(voltage = mean(voltage)) %>% 
+  pivot_wider(names_from=hemisphere, values_from=voltage, id_cols=Vp) %>% with(t.test(P7, P8, paired=T)) %>% apa::t_apa(es_ci=T)
 # electrodes.analysis %>% group_by(hemisphere, Vp) %>% summarise(voltage = mean(voltage)) %>% #one value per participant => correct calculation of standard error
 #   summarise(voltage.se = se(voltage), voltage = mean(voltage)) %>% 
 #   ggplot(aes(x = hemisphere, y = voltage)) +
@@ -487,7 +498,7 @@ electrodes.analysis %>% group_by(hemisphere, Vp) %>% summarise(voltage = mean(vo
 
 
 # Reliability -------------------------------------------------------------
-n2pc %>% filter(subset != "all", Vp %in% include) %>% pivot_wider(names_from=subset, values_from=n2pc) %>% 
+n2pc_TraitStatePow %>% filter(subset != "all", Vp %in% include) %>% pivot_wider(names_from=subset, values_from=n2pc) %>% 
   group_by(Block, distractors) %>% summarise(r = cor.test(Odd, Even) %>% apa::cor_apa(r_ci=T, print=F))
 
 contraipsi %>% filter(subset != "all", Vp %in% include) %>% pivot_wider(names_from=subset, values_from=voltage) %>% 
